@@ -283,7 +283,11 @@ AP.forEach(a=>{
 function setType(b,t){document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');type=t}
 function getAP(){return[...document.querySelectorAll('.ap.on')].map(d=>({c:d.dataset.c,n:d.textContent.replace('✓','').trim()}))}
 function g(id){return document.getElementById(id).value.trim()}
-function err(m){const e=document.getElementById('errBox');e.style.display='block';e.textContent=m;setTimeout(()=>e.style.display='none',4000)}
+function err(m){const e=document.getElementById('errBox');e.style.display='block';
+  if(m.includes('429')||m.includes('quota')||m.includes('Zu viele')||m.includes('retry'))
+    e.innerHTML='⏳ <strong>Rate Limit erreicht</strong> — bitte warte 1 Minute und versuche es erneut.';
+  else e.textContent=m;
+  setTimeout(()=>e.style.display='none',6000)}
 function lock(s){BTNS.forEach(id=>document.getElementById(id).disabled=s)}
 
 // ═══ PROGRESS ═══
