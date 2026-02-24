@@ -342,10 +342,19 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 
 // ═══ GEMINI API ═══
 async function ai(prompt){
-  const r=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+  let r;
+  try{
+    const ctrl=new AbortController();
+    const timeout=setTimeout(()=>ctrl.abort(),55000);
+    r=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt}),signal:ctrl.signal});
+    clearTimeout(timeout);
+  }catch(e){
+    if(e.name==='AbortError')throw new Error('Zeitüberschreitung. Bitte nochmal versuchen.');
+    throw new Error('Netzwerkfehler. Bitte Internetverbindung prüfen.');
+  }
   const txt=await r.text();
-  let d;try{d=JSON.parse(txt)}catch(e){throw new Error('Server-Antwort konnte nicht verarbeitet werden. Bitte nochmal versuchen.')}
-  if(d.error)throw new Error(typeof d.error==='string'?d.error:d.error.message||'API Fehler');
+  let d;try{d=JSON.parse(txt)}catch(e){throw new Error('Server-Antwort ungültig. Bitte nochmal versuchen.')}
+  if(d.error)throw new Error(d.error);
   return d.text||'Keine Ergebnisse.';
 }
 
